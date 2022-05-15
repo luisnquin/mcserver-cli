@@ -6,6 +6,7 @@ import (
 
 	"github.com/ProtonMail/go-appdir"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/luisnquin/mcserver-cli/src/constants"
 )
 
 type Config struct {
@@ -39,13 +40,13 @@ func LoadConfig(filePath string) *Config {
 	}
 }
 
-func OverwriteAppConfig(config *AppConfig, filePath string) error {
+func OverwriteAppConfig(config *AppConfig) error {
 	bytes, err := json.MarshalIndent(config, "", "\t")
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(filePath, bytes, os.ModePerm)
+	err = os.WriteFile(constants.ConfigFilePath, bytes, os.ModePerm)
 	if err != nil {
 		return err
 	}

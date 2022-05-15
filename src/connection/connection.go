@@ -10,11 +10,6 @@ import (
 )
 
 func Share(ctx context.Context, screen *tview.TextView, stop chan bool) {
-
-	fmt.Println(<-ctx.Done())
-
-
-	return
 	cmd := exec.CommandContext(ctx, "bash", "-c", "playit -s")
 
 	out, err := cmd.StdoutPipe()
@@ -26,16 +21,17 @@ func Share(ctx context.Context, screen *tview.TextView, stop chan bool) {
 		panic(err)
 	}
 
-	s := bufio.NewScanner(out)
+	scanner := bufio.NewScanner(out)
 
-	for s.Scan() {
+	for scanner.Scan() {
 		select {
 		case <-ctx.Done():
-			cmd.Process.Kill()
+			_ = cmd.Process.Kill()
+
 			return
 
 		default:
-			fmt.Fprintln(screen, s.Text())
+			fmt.Fprintln(screen, scanner.Text())
 		}
 	}
 

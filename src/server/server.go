@@ -14,6 +14,7 @@ import (
 	"github.com/luisnquin/mcserver-cli/src/constants"
 	"github.com/luisnquin/mcserver-cli/src/core"
 	"github.com/luisnquin/mcserver-cli/src/log"
+	"github.com/luisnquin/mcserver-cli/src/utils"
 )
 
 const configFilePath string = "./config.json"
@@ -141,12 +142,9 @@ func NoFlags() {
 		log.Warning(os.Stdout, data)
 
 	case downloadNewServerVersion:
-		server := SelectMCServerToDownload()
+		isConnected := utils.HasNetworkConnection()
 
-		err := Download(&server)
-		if err != nil {
-			log.Error(err)
-		}
+		DownloadScreen(isConnected)
 
 	case addPlugins:
 		log.Success(os.Stdout, "Adding plugins")

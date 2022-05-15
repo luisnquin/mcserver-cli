@@ -11,6 +11,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 
 	"github.com/luisnquin/mcserver-cli/src/constants"
+	"github.com/luisnquin/mcserver-cli/src/core"
 	"github.com/luisnquin/mcserver-cli/src/dolly"
 	"github.com/luisnquin/mcserver-cli/src/log"
 	"github.com/luisnquin/mcserver-cli/src/utils"
@@ -111,4 +112,22 @@ func Download(server *dolly.MCServer) error {
 	time.Sleep(time.Second * 2)
 
 	return nil
+}
+
+func DownloadScreen(isConnected bool) {
+	if !isConnected {
+		log.Error("operation failed, you don't have network connection")
+	}
+
+	mcserver := SelectMCServerToDownload()
+	if err := Download(&mcserver); err != nil {
+		log.Error(err)
+	}
+
+	Config.Apps.Versions = append(Config.Apps.Versions, mcserver.Version)
+
+	err := core.OverwriteAppConfig(&Config.Apps)
+	if err != nil {
+		log.Error(err)
+	}
 }

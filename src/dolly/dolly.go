@@ -21,17 +21,18 @@ type MCServer struct {
 func FetchVersions() (_ []MCServer, err error) {
 	if !utils.HasNetworkConnection() {
 		log.Discreet(os.Stdout, "You don't have a network connection, so we can't check versions.")
+
 		return nil, nil
 	}
 
-	c := colly.NewCollector()
+	col := colly.NewCollector()
 
 	var servers []MCServer
 
 	// To be more precise, the query must be 3 div elements back.
 	// This could affect performance. I'm also lazy this time, sorry
 	// (I realized after a while that it was ready).
-	c.OnHTML("div.ncItem", func(e *colly.HTMLElement) {
+	col.OnHTML("div.ncItem", func(e *colly.HTMLElement) {
 		var server MCServer
 
 		version := e.DOM.Find("div.info").Find("p.text-xl").Text()
@@ -42,6 +43,7 @@ func FetchVersions() (_ []MCServer, err error) {
 		url, exists := e.DOM.Find("div.flex-1").Find("a").Attr("href")
 		if !exists {
 			log.Discreet(os.Stdout, "Download URL for "+version+"Minecraft server version, not found")
+
 			return
 		}
 
@@ -51,18 +53,17 @@ func FetchVersions() (_ []MCServer, err error) {
 		servers = append(servers, server)
 	})
 
-	c.OnError(func(r *colly.Response, err error) {
+	col.OnError(func(r *colly.Response, err error) {
 		err = fmt.Errorf("scrapping failed with status code %d: %w", r.StatusCode, err)
 
 		return
 	})
 
-	err = c.Visit(constants.ServersProvider)
+	err = col.Visit(constants.ServersProvider)
 	if err != nil {
 		return nil, fmt.Errorf("Error visiting provider page: %w", err)
 	}
 
-	// This is my solution, crazy, right?
 	for i, server := range servers {
 		if server.Version == "1.0" {
 			servers = servers[:i+1]

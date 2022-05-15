@@ -1,7 +1,8 @@
-.PHONY: build, dist
+.PHONY: build
+.PHONY: dist
 
 build:
-	@go build -o ./build/mcserver ./src/main.go
+	@go build -o ./build/mcserver ./src/cmd/main.go
 
 run: 
 	@./build/mcserver
