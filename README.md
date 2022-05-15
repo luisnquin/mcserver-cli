@@ -17,3 +17,6 @@ Host your own minecraft server on your computer and share it to play with your f
     ```console
         sudo apt install openjdk-17-jre 
     ```
+
+## License
+This project is licensed under [MIT license](http://opensource.org/licenses/MIT). For the full text of the license, see the [LICENSE](LICENSE) file.
