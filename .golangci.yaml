@@ -4,3 +4,4 @@ linters:
     - exhaustivestruct
     - gochecknoinits
     - gochecknoglobals
+    - gci
