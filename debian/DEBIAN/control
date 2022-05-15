@@ -1,0 +1,8 @@
+Package: mc-server
+Version: 0.0.1
+Section: manager
+Architecture: amd64
+Maintainer: Luis Quiñones Requelme <lpaandres2020@gmail.com>
+Description: MC-Server CLI
+ Software to manage, download, etc minecraft servers
+ pretty simple program!
