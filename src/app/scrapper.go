@@ -13,8 +13,8 @@ import (
 
 func (m *Manager) FetchVersions() (map[string]*ExtVersion, error) {
 	maxTime := time.Now().Add(-time.Hour * m.config.Scrapper.HoursInterval)
-	if m.store.ExtVersions.LastTime.After(maxTime) && m.store.ExtVersions.Versions != nil {
-		return m.store.ExtVersions.Versions, nil
+	if m.store.Ext.LastTime.After(maxTime) && m.store.Ext.Versions != nil {
+		return m.store.Ext.Versions, nil
 	}
 
 	err := utils.CheckNetConn()
@@ -66,7 +66,7 @@ func (m *Manager) FetchVersions() (map[string]*ExtVersion, error) {
 		versions[version] = v
 	}
 
-	m.store.ExtVersions = extVersions{
+	m.store.Ext = ext{
 		Versions: versions,
 		LastTime: time.Now(),
 	}

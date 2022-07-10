@@ -18,22 +18,23 @@ type Manager struct {
 
 type store struct {
 	// Version name as key.
-	Versions    map[string]Version `json:"versions"`
-	ExtVersions extVersions        `json:"extVersions"`
+	Versions map[string]*Version `json:"versions"`
+	Ext      ext                 `json:"ext"`
 }
 
-type extVersions struct {
+type ext struct {
 	Versions map[string]*ExtVersion `json:"versions"`
 	LastTime time.Time              `json:"lastTime"`
 }
 
 type Version struct {
 	// Server name as key.
-	Servers map[string]Server `json:"servers"`
+	Servers map[string]*Server `json:"servers"`
 	// Indicates whether the version can be run.
 	Active bool `json:"active"`
 	name   string
 	config *config.App
+	saver
 }
 
 type Server struct {
@@ -42,4 +43,9 @@ type Server struct {
 	name    string
 	version string
 	config  *config.App
+	saver
+}
+
+type saver interface {
+	saveData() error
 }

@@ -1,6 +1,10 @@
 package config
 
-import "github.com/ProtonMail/go-appdir"
+import (
+	"os"
+
+	"github.com/ProtonMail/go-appdir"
+)
 
 //nolint:gomnd
 func New() *App {
@@ -17,7 +21,7 @@ func New() *App {
 		AppName:         "mc-server",
 		Version:         "v0.0.0",
 		Scrapper: scrapper{
-			HoursInterval: 5,
+			HoursInterval: 5, // to refresh
 		},
 		Dev: true,
 	}
@@ -36,4 +40,9 @@ func New() *App {
 }
 
 func (a *App) ensureDirs() {
+	_ = os.Mkdir(a.D.Config, os.ModePerm)
+	_ = os.Mkdir(a.D.Cache, os.ModePerm)
+	_ = os.Mkdir(a.D.Bins, os.ModePerm)
+	_ = os.Mkdir(a.D.Data, os.ModePerm)
+	_ = os.Mkdir(a.D.Logs, os.ModePerm)
 }

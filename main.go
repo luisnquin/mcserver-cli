@@ -11,8 +11,7 @@ func main() {
 	config := config.New()
 	app := app.New(config)
 
-	err := app.RegisterVersionBin("1.16.5")
-	if err != nil {
+	if _, err := app.FetchVersions(); err != nil {
 		panic(err)
 	}
 
@@ -21,17 +20,17 @@ func main() {
 		panic(err)
 	}
 
-	err = v.NewServer("aesda")
+	s1, err := v.GetServer("acid")
 	if err != nil {
 		panic(err)
 	}
 
-	s, err := v.GetServer("aesda")
+	s2, err := v.GetServer("aesda")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(s.LogFilePath())
-
-	fmt.Println(app.ListAvailableVersions())
+	fmt.Println(s1.LogFilePath())
+	fmt.Println(s2.LogFilePath())
+	fmt.Println(app.ListAllServers())
 }
