@@ -1,8 +1,16 @@
 package utils
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
-func HasNetworkConnection() bool {
+// Makes an http request to a server that returns a 'No Content' status.
+func CheckNetConn() error {
 	_, err := http.Get("http://clients3.google.com/generate_204")
-	return err == nil
+	if err != nil {
+		return fmt.Errorf("failed to connect: %w", err)
+	}
+
+	return nil
 }

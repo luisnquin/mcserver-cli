@@ -1,7 +1,17 @@
 linters:
-  enable-all: true
-  disable:
-    - exhaustivestruct
-    - gochecknoinits
-    - gochecknoglobals
-    - gci
+    enable-all: true
+    disable:
+        - exhaustivestruct
+        - gochecknoinits
+        - gochecknoglobals
+        - gci
+        - varnamelen
+        - revive
+        - exhaustruct
+        - wrapcheck
+        - gosec
+        - durationcheck
+linters-settings:
+  funlen:
+    lines: 70
+    statements: 40
