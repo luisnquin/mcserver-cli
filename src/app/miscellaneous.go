@@ -11,7 +11,7 @@ import (
 	"github.com/luisnquin/mcserver-cli/src/utils"
 )
 
-//nolint:gofumpt,gomnd
+//nolint:gomnd
 func (m *Manager) saveData() error {
 	err := utils.EnsureFileExists(m.config.F.Data)
 	if err != nil {

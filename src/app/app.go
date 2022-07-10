@@ -51,7 +51,19 @@ func (m *Manager) ensureVersions() error {
 	return m.saveData()
 }
 
-func (m *Manager) ListVersions() []string {
+func (m *Manager) ListAvailableVersions() []string {
+	versions := make([]string, 0)
+
+	for name, v := range m.store.Versions {
+		if v.Active {
+			versions = append(versions, name)
+		}
+	}
+
+	return versions
+}
+
+func (m *Manager) ListAllVersions() []string {
 	versions := make([]string, 0)
 
 	for name := range m.store.Versions {

@@ -32,4 +32,6 @@ func main() {
 	}
 
 	fmt.Println(s.LogFilePath())
+
+	fmt.Println(app.ListAvailableVersions())
 }
