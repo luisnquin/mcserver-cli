@@ -6,10 +6,14 @@ func (v *Version) GetServer(name string) (Server, error) {
 		return s, ErrServerNotFound
 	}
 
+	s.config = v.config
+	s.version = v.name
+	s.name = name
+
 	return s, nil
 }
 
-func (v *Version) AddServer(name string) error {
+func (v *Version) NewServer(name string) error {
 	if _, ok := v.Servers[name]; ok {
 		return ErrServerAlreadyExists
 	}
@@ -28,6 +32,8 @@ func (v *Version) CopyServer(sTarget, name string) error {
 	if !ok {
 		return ErrServerNotFound
 	}
+
+	s.IsCopy = true
 
 	v.Servers[name] = s
 

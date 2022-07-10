@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/luisnquin/mcserver-cli/src/config"
 )
@@ -13,8 +14,8 @@ var (
 	ErrVersionAlreadyExists error = errors.New("version already exists")
 	ErrDownloadURLNotFound  error = errors.New("download url not found")
 	ErrServerAlreadyExists  error = errors.New("server already exists")
+	ErrBinaryNotRecognized  error = errors.New("binary not recognized")
 	ErrVersionNotFound      error = errors.New("version not found")
-	ErrBinaryNotFound       error = errors.New("binary not found")
 	ErrServerNotFound       error = errors.New("server not found")
 )
 
@@ -31,7 +32,45 @@ func New(config *config.App) *Manager {
 		app.store.Versions = make(map[string]Version)
 	}
 
+	if err := app.ensureVersions(); err != nil {
+		panic(err)
+	}
+
 	return app
+}
+
+func (m *Manager) ensureVersions() error {
+	for k, v := range m.store.Versions {
+		_, err := os.Stat(m.config.D.Bins + k)
+		if err != nil {
+			v.Active = false
+			m.store.Versions[k] = v
+		}
+	}
+
+	return m.saveData()
+}
+
+func (m *Manager) ListVersions() []string {
+	versions := make([]string, 0)
+
+	for name := range m.store.Versions {
+		versions = append(versions, name)
+	}
+
+	return versions
+}
+
+func (m *Manager) ListAllServers() []string {
+	servers := make([]string, 0)
+
+	for version, v := range m.store.Versions {
+		for server := range v.Servers {
+			servers = append(servers, server+" - "+version)
+		}
+	}
+
+	return servers
 }
 
 func (m *Manager) GetVersion(name string) (Version, error) {
@@ -39,6 +78,13 @@ func (m *Manager) GetVersion(name string) (Version, error) {
 	if !ok {
 		return v, ErrVersionNotFound
 	}
+
+	if v.Servers == nil {
+		v.Servers = make(map[string]Server)
+	}
+
+	v.config = m.config
+	v.name = name
 
 	return v, nil
 }
@@ -64,6 +110,10 @@ func (m *Manager) DeleteVersion(name string) error {
 }
 
 func (m *Manager) RegisterVersionBin(name string) error {
+	if !strings.HasSuffix(name, ".jar") {
+		name += ".jar"
+	}
+
 	f, err := os.Stat(m.config.D.Bins + name)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -73,15 +123,21 @@ func (m *Manager) RegisterVersionBin(name string) error {
 		return fmt.Errorf("unexpected error: %w", err)
 	}
 
-	if !m.IsVersionRegistered(f.Name()) {
-		return ErrBinaryNotFound
+	version := f.Name()[:len(f.Name())-4]
+
+	if !m.IsVersionRegistered(version) {
+		return ErrBinaryNotRecognized
 	}
 
-	return nil
+	m.store.Versions[version] = Version{
+		Active: true,
+	}
+
+	return m.saveData()
 }
 
 func (m *Manager) IsVersionRegistered(name string) bool {
-	_, ok := m.store.PrevScraped.Versions[name]
+	_, ok := m.store.ExtVersions.Versions[name]
 
 	return ok
 }

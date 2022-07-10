@@ -12,17 +12,17 @@ type ExtVersion struct {
 }
 
 type Manager struct {
-	// Version name as key.
 	store  store
 	config *config.App
 }
 
 type store struct {
+	// Version name as key.
 	Versions    map[string]Version `json:"versions"`
-	PrevScraped prevScraped        `json:"prevScraped"`
+	ExtVersions extVersions        `json:"extVersions"`
 }
 
-type prevScraped struct {
+type extVersions struct {
 	Versions map[string]*ExtVersion `json:"versions"`
 	LastTime time.Time              `json:"lastTime"`
 }
@@ -32,9 +32,14 @@ type Version struct {
 	Servers map[string]Server `json:"servers"`
 	// Indicates whether the version can be run.
 	Active bool `json:"active"`
+	name   string
+	config *config.App
 }
 
 type Server struct {
-	Tag    string `json:"tag"`
-	IsCopy bool   `json:"isCopy"`
+	Tag     string `json:"tag"`
+	IsCopy  bool   `json:"isCopy"`
+	name    string
+	version string
+	config  *config.App
 }

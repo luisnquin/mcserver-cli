@@ -30,5 +30,10 @@ func New() *App {
 		Log:    c.D.Logs + "main.log",
 	}
 
+	c.ensureDirs()
+
 	return c
+}
+
+func (a *App) ensureDirs() {
 }

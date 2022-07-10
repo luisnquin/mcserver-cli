@@ -11,12 +11,25 @@ func main() {
 	config := config.New()
 	app := app.New(config)
 
-	versions, err := app.FetchVersions()
+	err := app.RegisterVersionBin("1.16.5")
 	if err != nil {
 		panic(err)
 	}
 
-	for k, v := range versions {
-		fmt.Println(k, v.PageURL, v.DownloadURL)
+	v, err := app.GetVersion("1.16.5")
+	if err != nil {
+		panic(err)
 	}
+
+	err = v.NewServer("aesda")
+	if err != nil {
+		panic(err)
+	}
+
+	s, err := v.GetServer("aesda")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(s.LogFilePath())
 }

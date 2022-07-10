@@ -12,19 +12,20 @@ import (
 )
 
 func (m *Manager) FetchVersions() (map[string]*ExtVersion, error) {
+	maxTime := time.Now().Add(-time.Hour * m.config.Scrapper.HoursInterval)
+	if m.store.ExtVersions.LastTime.After(maxTime) && m.store.ExtVersions.Versions != nil {
+		return m.store.ExtVersions.Versions, nil
+	}
+
 	err := utils.CheckNetConn()
 	if err != nil {
 		return nil, err
 	}
 
-	maxTime := time.Now().Add(-time.Hour * m.config.Scrapper.HoursInterval)
-	if m.store.PrevScraped.LastTime.After(maxTime) && m.store.PrevScraped.Versions != nil {
-		return m.store.PrevScraped.Versions, nil
-	}
-
-	c, versions := colly.NewCollector(), make(map[string]*ExtVersion, 0)
-
-	semVerVal := regexp.MustCompile(`^[\.0-9]+$`)
+	var (
+		c, versions = colly.NewCollector(), make(map[string]*ExtVersion, 0)
+		semVerVal   = regexp.MustCompile(`^[\.0-9]+$`)
+	)
 
 	c.OnHTML("div.ncItem", func(e *colly.HTMLElement) {
 		url, exists := e.DOM.Find("div.flex-1").Find("a").Attr("href")
@@ -65,7 +66,7 @@ func (m *Manager) FetchVersions() (map[string]*ExtVersion, error) {
 		versions[version] = v
 	}
 
-	m.store.PrevScraped = prevScraped{
+	m.store.ExtVersions = extVersions{
 		Versions: versions,
 		LastTime: time.Now(),
 	}
