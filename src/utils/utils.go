@@ -21,9 +21,9 @@ func Exists(name string) (bool, error) {
 	return false, fmt.Errorf("error trying to analize local directory: %w", err)
 }
 
-func Contains(set []any, target any) bool {
-	for _, item := range set {
-		if item == target {
+func Contains(slice []string, v string) bool {
+	for _, item := range slice {
+		if item == v {
 			return true
 		}
 	}

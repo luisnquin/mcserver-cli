@@ -1,6 +1,7 @@
 package log
 
 import (
+	"io"
 	"log"
 	"os"
 
@@ -8,19 +9,32 @@ import (
 )
 
 type Logger struct {
+	file  *os.File
 	err   *log.Logger
 	warn  *log.Logger
 	info  *log.Logger
 	fatal *log.Logger
 }
 
-func NewLogger() *Logger {
-	return &Logger{
-		fatal: log.New(os.Stdout, color.New(color.FgHiBlack, color.BgWhite).Sprint("FATAL"), log.Ldate|log.Ltime),
-		err:   log.New(os.Stdout, color.New(color.FgHiRed).Sprint("ERROR"), log.Ldate|log.Ltime),
-		warn:  log.New(os.Stdout, color.New(color.FgHiBlue).Sprint("WARN"), log.Ldate|log.Ltime),
-		info:  log.New(os.Stdout, color.New(color.FgHiYellow).Sprint("INFO"), log.Ldate|log.Ltime),
+func New(filePath string) *Logger {
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
+	if err != nil {
+		panic(err)
 	}
+
+	writer := io.MultiWriter(os.Stdout, f)
+
+	return &Logger{
+		fatal: log.New(writer, color.New(color.FgHiMagenta).Sprint("FATAL")+" ", log.Ldate|log.Ltime),
+		err:   log.New(writer, color.New(color.FgHiRed).Sprint("ERROR "), log.Ldate|log.Ltime),
+		warn:  log.New(writer, color.New(color.FgHiYellow).Sprint("WARN "), log.Ldate|log.Ltime),
+		info:  log.New(writer, color.New(color.FgHiBlue).Sprint("INFO "), log.Ldate|log.Ltime),
+		file:  f,
+	}
+}
+
+func (l *Logger) Close() error {
+	return l.file.Close()
 }
 
 func (l *Logger) Error(err any) {

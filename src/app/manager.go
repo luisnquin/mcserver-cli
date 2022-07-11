@@ -3,10 +3,12 @@ package app
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/luisnquin/mcserver-cli/src/config"
+	"github.com/luisnquin/mcserver-cli/src/utils"
 )
 
 var (
@@ -47,6 +49,24 @@ func (m *Manager) ensureVersions() error {
 		m.store.Versions[k] = v
 	}
 
+	dir, err := ioutil.ReadDir(m.config.D.Bins)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, f := range dir {
+		if f.IsDir() {
+			continue
+		}
+
+		if strings.HasSuffix(f.Name(), ".jar") && !utils.Contains(m.ListAllVersions(), f.Name()[:len(f.Name())-4]) {
+			err = m.RegisterVersionBin(f.Name())
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
 	return m.saveData()
 }
 
@@ -84,7 +104,7 @@ func (m *Manager) ListAllServers() []string {
 	return servers
 }
 
-func (m *Manager) GetVersion(name string) (*Version, error) {
+func (m *Manager) GetVersion(name string) (Versioner, error) {
 	v, ok := m.store.Versions[name]
 	if !ok {
 		return v, ErrVersionNotFound

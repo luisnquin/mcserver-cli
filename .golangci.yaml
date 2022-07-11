@@ -11,7 +11,9 @@ linters:
         - wrapcheck
         - gosec
         - durationcheck
+        - ireturn
 linters-settings:
   funlen:
     lines: 70
     statements: 40
+  
