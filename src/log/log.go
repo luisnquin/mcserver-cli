@@ -25,10 +25,10 @@ func New(filePath string) *Logger {
 	writer := io.MultiWriter(os.Stdout, f)
 
 	return &Logger{
-		fatal: log.New(writer, color.New(color.FgHiMagenta).Sprint("FATAL")+" ", log.Ldate|log.Ltime),
-		err:   log.New(writer, color.New(color.FgHiRed).Sprint("ERROR "), log.Ldate|log.Ltime),
-		warn:  log.New(writer, color.New(color.FgHiYellow).Sprint("WARN "), log.Ldate|log.Ltime),
-		info:  log.New(writer, color.New(color.FgHiBlue).Sprint("INFO "), log.Ldate|log.Ltime),
+		fatal: log.New(writer, color.New(color.FgHiMagenta).Sprint("FATAL")+" ", log.Ldate|log.Ltime|log.Lmsgprefix),
+		err:   log.New(writer, color.New(color.FgHiRed).Sprint("ERROR "), log.Ldate|log.Ltime|log.Lmsgprefix),
+		warn:  log.New(writer, color.New(color.FgHiYellow).Sprint("WARN  "), log.Ldate|log.Ltime|log.Lmsgprefix),
+		info:  log.New(writer, color.New(color.FgHiBlue).Sprint("INFO  "), log.Ldate|log.Ltime|log.Lmsgprefix),
 		file:  f,
 	}
 }
