@@ -52,7 +52,7 @@ type saver interface {
 	saveData() error
 }
 
-type Servor interface {
+type Pod interface {
 	Start() error
 	Share() error
 	StopSharing() error
@@ -61,8 +61,8 @@ type Servor interface {
 	LogsFilePath() string
 }
 
-type Versioner interface {
-	GetServer(name string) (Servor, error)
+type Provider interface {
+	GetServer(name string) (Pod, error)
 	NewServer(name string) error
 	CopyServer(target, name string) error
 	DeleteServer(name string) error

@@ -1,6 +1,6 @@
 package app
 
-func (v *Version) GetServer(name string) (Servor, error) {
+func (v *Version) GetServer(name string) (Pod, error) {
 	s, ok := v.Servers[name]
 	if !ok {
 		return nil, ErrServerNotFound

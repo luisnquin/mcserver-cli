@@ -104,7 +104,7 @@ func (m *Manager) ListAllServers() []string {
 	return servers
 }
 
-func (m *Manager) GetVersion(name string) (Versioner, error) {
+func (m *Manager) GetVersion(name string) (Provider, error) {
 	v, ok := m.store.Versions[name]
 	if !ok {
 		return v, ErrVersionNotFound
