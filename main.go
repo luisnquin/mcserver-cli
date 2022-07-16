@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/luisnquin/mcserver-cli/src/app"
 	"github.com/luisnquin/mcserver-cli/src/config"
-	"github.com/luisnquin/mcserver-cli/src/log"
 )
 
 func main() {
@@ -31,14 +30,16 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(s1.LogsFilePath())
-	fmt.Println(s2.LogsFilePath())
+	err = s1.Start(context.Background())
+	if err != nil {
+		panic(err)
+	}
 
-	l := log.New(s2.LogsFilePath())
-	defer l.Close()
+	err = s2.Start(context.Background())
+	if err != nil {
+		panic(err)
+	}
 
-	l.Error("?????")
-	l.Warn("´´´´´´")
-	l.Info(s1.LogsFilePath())
-	l.Fatal("¡¡¡¡")
+	s1.Output()
+	s2.Output()
 }

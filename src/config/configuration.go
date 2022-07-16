@@ -8,7 +8,7 @@ import (
 
 //nolint:gomnd
 func New() *App {
-	d := appdir.New("mc-server")
+	d := appdir.New("mcserver")
 
 	c := &App{
 		D: dirs{
@@ -18,10 +18,10 @@ func New() *App {
 			Logs:   d.UserLogs() + "/",
 		},
 		ServersProvider: "https://mcversions.net",
-		AppName:         "mc-server",
+		AppName:         "mcserver",
 		Version:         "v0.0.0",
 		Scrapper: scrapper{
-			HoursInterval: 5, // to refresh
+			HoursToRefresh: 5, // to refresh
 		},
 		Dev: true,
 	}
@@ -40,9 +40,9 @@ func New() *App {
 }
 
 func (a *App) ensureDirs() {
-	_ = os.Mkdir(a.D.Config, os.ModePerm)
-	_ = os.Mkdir(a.D.Cache, os.ModePerm)
-	_ = os.Mkdir(a.D.Bins, os.ModePerm)
-	_ = os.Mkdir(a.D.Data, os.ModePerm)
-	_ = os.Mkdir(a.D.Logs, os.ModePerm)
+	_ = os.MkdirAll(a.D.Config, os.ModePerm)
+	_ = os.MkdirAll(a.D.Cache, os.ModePerm)
+	_ = os.MkdirAll(a.D.Bins, os.ModePerm)
+	_ = os.MkdirAll(a.D.Data, os.ModePerm)
+	_ = os.MkdirAll(a.D.Logs, os.ModePerm)
 }

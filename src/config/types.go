@@ -15,7 +15,7 @@ type App struct {
 }
 
 type scrapper struct {
-	HoursInterval time.Duration
+	HoursToRefresh time.Duration
 }
 
 type dirs struct {

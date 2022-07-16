@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/luisnquin/mcserver-cli/src/config"
 )
 
 type Logger struct {
@@ -16,19 +17,24 @@ type Logger struct {
 	fatal *log.Logger
 }
 
-func New(filePath string) *Logger {
+func New(filePath string, c *config.App) *Logger {
 	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 
-	writer := io.MultiWriter(os.Stdout, f)
+	main, err := os.OpenFile(c.F.Log, os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+
+	w := io.MultiWriter(os.Stdout, f, main)
 
 	return &Logger{
-		fatal: log.New(writer, color.New(color.FgHiMagenta).Sprint("FATAL")+" ", log.Ldate|log.Ltime|log.Lmsgprefix),
-		err:   log.New(writer, color.New(color.FgHiRed).Sprint("ERROR "), log.Ldate|log.Ltime|log.Lmsgprefix),
-		warn:  log.New(writer, color.New(color.FgHiYellow).Sprint("WARN  "), log.Ldate|log.Ltime|log.Lmsgprefix),
-		info:  log.New(writer, color.New(color.FgHiBlue).Sprint("INFO  "), log.Ldate|log.Ltime|log.Lmsgprefix),
+		fatal: log.New(w, color.New(color.FgHiMagenta).Sprint("FATAL")+" ", log.Ldate|log.Ltime|log.Lmsgprefix),
+		err:   log.New(w, color.New(color.FgHiRed).Sprint("ERROR "), log.Ldate|log.Ltime|log.Lmsgprefix),
+		warn:  log.New(w, color.New(color.FgHiYellow).Sprint("WARN  "), log.Ldate|log.Ltime|log.Lmsgprefix),
+		info:  log.New(w, color.New(color.FgHiBlue).Sprint("INFO  "), log.Ldate|log.Ltime|log.Lmsgprefix),
 		file:  f,
 	}
 }

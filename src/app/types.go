@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+	"io"
 	"time"
 
 	"github.com/luisnquin/mcserver-cli/src/config"
@@ -39,25 +41,35 @@ type Version struct {
 	saver
 }
 
-type Server struct {
-	Tag     string `json:"tag"`
-	IsCopy  bool   `json:"isCopy"`
-	name    string
-	version string
-	config  *config.App
-	saver
-}
+type (
+	Server struct {
+		Tag       string `json:"tag"`
+		IsCopy    bool   `json:"isCopy"`
+		name      string
+		version   string
+		config    *config.App
+		extServer extServer
+		err       error
+		isRunning bool
+		saver
+	}
+
+	extServer struct {
+		stderr io.ReadCloser
+		stdout io.ReadCloser
+	}
+)
 
 type saver interface {
 	saveData() error
 }
 
 type Pod interface {
-	Start() error
+	Start(context.Context) error
 	Share() error
 	StopSharing() error
 	Stop() error
-	Output() error
+	Output() (io.ReadCloser, error)
 	LogsFilePath() string
 }
 

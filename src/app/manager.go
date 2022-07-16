@@ -12,12 +12,17 @@ import (
 )
 
 var (
-	ErrServerBinNotFound    error = errors.New("server binary not found")
+	ErrDownloadURLNotFound error = errors.New("download url not found")
+	ErrBinaryNotRecognized error = errors.New("binary not recognized")
+
 	ErrVersionAlreadyExists error = errors.New("version already exists")
-	ErrDownloadURLNotFound  error = errors.New("download url not found")
-	ErrServerAlreadyExists  error = errors.New("server already exists")
-	ErrBinaryNotRecognized  error = errors.New("binary not recognized")
 	ErrVersionNotFound      error = errors.New("version not found")
+
+	ErrServerStdoutFailing  error = errors.New("standard output of server is not working properly")
+	ErrErrorInServerRuntime error = errors.New("error captured in server runtime")
+	ErrServerBinNotFound    error = errors.New("server binary not found")
+	ErrServerIsNotRunning   error = errors.New("server is not running")
+	ErrServerAlreadyExists  error = errors.New("server already exists")
 	ErrServerNotFound       error = errors.New("server not found")
 )
 
