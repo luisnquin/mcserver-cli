@@ -182,3 +182,7 @@ func (m *Manager) IsVersionRegistered(name string) bool {
 
 	return ok
 }
+
+func CapturedError(msg string) error {
+	return fmt.Errorf("%w: %s", ErrErrorInServerRuntime, msg)
+}

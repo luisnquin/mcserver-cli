@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"io"
+	"os"
 	"time"
 
 	"github.com/luisnquin/mcserver-cli/src/config"
@@ -43,20 +44,23 @@ type Version struct {
 
 type (
 	Server struct {
-		Tag       string `json:"tag"`
-		IsCopy    bool   `json:"isCopy"`
-		name      string
-		version   string
-		config    *config.App
-		extServer extServer
-		err       error
-		isRunning bool
+		// Tag          string `json:"tag"`
+		IsCopy       bool `json:"isCopy"`
+		config       *config.App
+		server       extServer
+		name         string
+		version      string
+		secondsAlive int64
+		isRunning    bool
+
+		errChan chan error
 		saver
 	}
 
 	extServer struct {
-		stderr io.ReadCloser
-		stdout io.ReadCloser
+		stderr  io.ReadCloser
+		stdout  io.ReadCloser
+		process *os.Process
 	}
 )
 
@@ -65,12 +69,13 @@ type saver interface {
 }
 
 type Pod interface {
+	Name() string
+	Err() error
 	Start(context.Context) error
+	Stop() (timeAlive int64, err error)
 	Share() error
 	StopSharing() error
-	Stop() error
 	Output() (io.ReadCloser, error)
-	LogsFilePath() string
 }
 
 type Provider interface {

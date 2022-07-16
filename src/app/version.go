@@ -6,6 +6,7 @@ func (v *Version) GetServer(name string) (Pod, error) {
 		return nil, ErrServerNotFound
 	}
 
+	s.errChan = make(chan error)
 	s.config = v.config
 	s.version = v.name
 	s.name = name

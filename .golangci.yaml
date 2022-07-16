@@ -12,6 +12,7 @@ linters:
         - gosec
         - durationcheck
         - ireturn
+        - paralleltest
 linters-settings:
   funlen:
     lines: 70
