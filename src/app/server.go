@@ -86,8 +86,17 @@ func (s *Server) binPath() string {
 	return s.config.D.Bins + s.version + ".jar"
 }
 
+func (s *Server) workingDir() string {
+	workingDir := s.config.D.Data + "servers/" + s.name + "_" + s.version + "/"
+
+	_ = os.MkdirAll(workingDir, os.ModePerm)
+
+	return workingDir
+}
+
 func (s *Server) executeServer(ctx context.Context) {
 	cmd := exec.CommandContext(ctx, "java", "-jar", s.binPath())
+	cmd.Dir = s.workingDir()
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
