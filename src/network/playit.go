@@ -1,5 +1,5 @@
 //nolint:tagliatelle
-package auth
+package network
 
 import (
 	"bytes"
@@ -36,10 +36,16 @@ type TunnelResponse struct {
 	PortReleases []string `json:"port_releases"`
 }
 
+type ErrResponse struct {
+	Type    string `json:"type"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 type (
 	PortMappingsResponse struct {
-		Type     string `json:"type"`
-		Mappings []string
+		Type     string    `json:"type"`
+		Mappings []Mapping `json:"mappings"`
 	}
 
 	Mapping struct {
@@ -47,23 +53,46 @@ type (
 		Name                string `json:"name"`
 		Proto               string `json:"proto"`
 		TunnelIP            string `json:"tunnel_ip"`
-		TunnelFromPort      string `json:"tunnel_from_port"`
-		TunnelToPort        string `json:"tunnel_to_port"`
+		TunnelFromPort      int    `json:"tunnel_from_port"`
+		TunnelToPort        int    `json:"tunnel_to_port"`
 		BindIP              string `json:"bind_ip"`
 		LocalIP             string `json:"local_ip"`
-		LocalPort           string `json:"local_port"`
+		LocalPort           int    `json:"local_port"`
 		TunnelType          string `json:"tunnel_type"`
 		GeneratedDomainName string `json:"generated_domain_name"`
 		CustomDomain        string `json:"custom_domain"`
 	}
 )
 
+type (
+	PortLeasesResponse struct {
+		Type   string  `json:"type"`
+		Leases []Lease `json:"leases"`
+	}
+
+	Lease struct {
+		ID                 string `json:"id"`
+		IPAddress          string `json:"ip_address"`
+		StripeSubID        string `json:"stripe_sub_id"`
+		IsRandomAllocation bool   `json:"is_random_allocation"`
+		Ports              Ports  `json:"ports"`
+	}
+
+	Ports struct {
+		Proto    string `json:"proto"`
+		FromPort int    `json:"from_port"`
+		ToPort   int    `json:"to_port"`
+	}
+)
+
 const (
 	PlayItTypeGetTunnelNetwork string = "get-tunnel-network"
 	PlayItTypeListPortMappings string = "list-port-mappings"
-	PlayItTypePortMappings     string = "port-mappings"
+	PlayItTypeListPortLeases   string = "list-port-leases"
 	PlayItTypeRefreshSession   string = "refresh-session"
 	PlayItTypeTunnelNetwork    string = "tunnel-network"
+	PlayItTypePortMappings     string = "port-mappings"
+	PlayItTYpePortLeases       string = "port-leases"
 	PlayItTypeSignedIn         string = "signed-in"
 	PlayItTypeSignIn           string = "sign-in"
 	PlayItTypeError            string = "error"
@@ -124,32 +153,68 @@ func RefreshSessionPlayItAPI(token string) (SignInResponse, error) {
 	return response, res.Body.Close()
 }
 
-func GetTunnelPlayItAPI(token string) error {
+func GetTunnelPlayItAPI(token string) (TunnelResponse, error) {
+	var (
+		response TunnelResponse
+
+		request = CommonPlayItDTO{
+			Type: PlayItTypeGetTunnelNetwork,
+		}
+	)
+
+	return response, postWithToken("https://api.playit.cloud/tunnel", token, request, &response)
+}
+
+func ListPortMappings(token string) (PortMappingsResponse, error) {
+	var (
+		response PortMappingsResponse
+
+		request = CommonPlayItDTO{
+			Type: PlayItTypeListPortMappings,
+		}
+	)
+
+	return response, postWithToken("https://api.playit.cloud/account", token, request, &response)
+}
+
+func ListPortLeases(token string) (PortLeasesResponse, error) {
+	var (
+		response PortLeasesResponse
+
+		request = CommonPlayItDTO{
+			Type: PlayItTypeListPortLeases,
+		}
+	)
+
+	return response, postWithToken("https://api.playit.cloud/account", token, request, &response)
+}
+
+func postWithToken(url, token string, payload, v any) error {
 	b := new(bytes.Buffer)
 
-	err := json.NewEncoder(b).Encode(CommonPlayItDTO{
-		Type: PlayItTypeGetTunnelNetwork,
-	})
+	err := json.NewEncoder(b).Encode(payload)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.playit.cloud/tunnel", b)
+	req, err := http.NewRequest(http.MethodPost, url, b)
 	if err != nil {
 		return err
 	}
 
-	req.Header.Add("Authorization", "Bearer "+token)
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", "bearer "+token)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 
-	return res.Body.Close()
-}
+	err = json.NewDecoder(res.Body).Decode(&v)
+	if err != nil {
+		return err
+	}
 
-func ListPortMappings() error {
-	return nil
+	return res.Body.Close()
 }
