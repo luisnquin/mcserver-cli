@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+type CommonPlayItDTO struct {
+	Type string `json:"type"`
+}
+
 type SignInRequest struct {
 	Type     string `json:"type"`
 	Email    string `json:"email"`
@@ -16,10 +20,6 @@ type SignInRequest struct {
 type RefreshSessionRequest struct {
 	Type              string `json:"type"`
 	ExpiredSessionKey string `json:"expired_session_key"`
-}
-
-type TunnelRequest struct {
-	Type string `json:"type"`
 }
 
 type SignInResponse struct {
@@ -127,7 +127,7 @@ func RefreshSessionPlayItAPI(token string) (SignInResponse, error) {
 func GetTunnelPlayItAPI(token string) error {
 	b := new(bytes.Buffer)
 
-	err := json.NewEncoder(b).Encode(TunnelRequest{
+	err := json.NewEncoder(b).Encode(CommonPlayItDTO{
 		Type: PlayItTypeGetTunnelNetwork,
 	})
 	if err != nil {
