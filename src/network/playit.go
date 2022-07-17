@@ -4,7 +4,10 @@ package network
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
+	"reflect"
 )
 
 type CommonPlayItDTO struct {
@@ -34,12 +37,6 @@ type TunnelResponse struct {
 	Type         string   `json:"type"`
 	Agents       []string `json:"agents"`
 	PortReleases []string `json:"port_releases"`
-}
-
-type ErrResponse struct {
-	Type    string `json:"type"`
-	Code    int    `json:"code"`
-	Message string `json:"message"`
 }
 
 type (
@@ -96,100 +93,91 @@ const (
 	PlayItTypeSignedIn         string = "signed-in"
 	PlayItTypeSignIn           string = "sign-in"
 	PlayItTypeError            string = "error"
+
+	PlayItMinecraftJavaTunnelType string = "minecraft-java"
 )
 
-const PlayItMinecraftJavaTunnelType string = "minecraft-java"
+var (
+	ErrUnexpectedStatusCode = errors.New("unexpected status code")
+	ErrUnauthorized         = errors.New("unauthorized access, token probably must be refreshed")
+)
 
-func SignInPlayItAPI(email, password string) (SignInResponse, error) {
-	var response SignInResponse
+func Login(email, password string) (SignInResponse, error) {
+	var resBody SignInResponse
 
 	b := new(bytes.Buffer)
 
-	err := json.NewEncoder(b).Encode(SignInRequest{
-		Type:     PlayItTypeSignIn,
-		Email:    email,
-		Password: password,
-	})
+	err := json.NewEncoder(b).Encode(SignInRequest{Type: PlayItTypeSignIn, Email: email, Password: password})
 	if err != nil {
-		return response, err
+		return resBody, err
 	}
 
 	res, err := http.Post("https://api.playit.cloud/login", "application/json", b)
 	if err != nil {
-		return response, err
+		return resBody, err
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&response)
+	err = json.NewDecoder(res.Body).Decode(&resBody)
 	if err != nil {
-		return response, err
+		return resBody, err
 	}
 
-	return response, res.Body.Close()
+	return resBody, res.Body.Close()
 }
 
-func RefreshSessionPlayItAPI(token string) (SignInResponse, error) {
-	var response SignInResponse
-
-	b := new(bytes.Buffer)
-
-	err := json.NewEncoder(b).Encode(RefreshSessionRequest{
-		Type:              PlayItTypeRefreshSession,
-		ExpiredSessionKey: token,
-	})
-	if err != nil {
-		return response, err
-	}
-
-	res, err := http.Post("https://api.playit.cloud/login", "application/json", b)
-	if err != nil {
-		return response, err
-	}
-
-	err = json.NewDecoder(res.Body).Decode(&response)
-	if err != nil {
-		return response, err
-	}
-
-	return response, res.Body.Close()
-}
-
-func GetTunnelPlayItAPI(token string) (TunnelResponse, error) {
+func RefreshSession(token string) (SignInResponse, error) {
 	var (
-		response TunnelResponse
+		resBody SignInResponse
+		request = RefreshSessionRequest{
+			Type:              PlayItTypeRefreshSession,
+			ExpiredSessionKey: token,
+		}
+	)
+
+	return resBody, postWithToken("https://api.playit.cloud/login", token, request, &resBody)
+}
+
+func GetTunnel(token string) (TunnelResponse, error) {
+	var (
+		resBody TunnelResponse
 
 		request = CommonPlayItDTO{
 			Type: PlayItTypeGetTunnelNetwork,
 		}
 	)
 
-	return response, postWithToken("https://api.playit.cloud/tunnel", token, request, &response)
+	return resBody, postWithToken("https://api.playit.cloud/tunnel", token, request, &resBody)
 }
 
 func ListPortMappings(token string) (PortMappingsResponse, error) {
 	var (
-		response PortMappingsResponse
+		resBody PortMappingsResponse
 
 		request = CommonPlayItDTO{
 			Type: PlayItTypeListPortMappings,
 		}
 	)
 
-	return response, postWithToken("https://api.playit.cloud/account", token, request, &response)
+	return resBody, postWithToken("https://api.playit.cloud/account", token, request, &resBody)
 }
 
 func ListPortLeases(token string) (PortLeasesResponse, error) {
 	var (
-		response PortLeasesResponse
+		resBody PortLeasesResponse
 
 		request = CommonPlayItDTO{
 			Type: PlayItTypeListPortLeases,
 		}
 	)
 
-	return response, postWithToken("https://api.playit.cloud/account", token, request, &response)
+	return resBody, postWithToken("https://api.playit.cloud/account", token, request, &resBody)
 }
 
-func postWithToken(url, token string, payload, v any) error {
+func postWithToken(url, token string, payload, resBody any) error {
+	if reflect.ValueOf(resBody).Kind() != reflect.Pointer {
+		panic("response body must be a reference")
+	}
+
 	b := new(bytes.Buffer)
 
 	err := json.NewEncoder(b).Encode(payload)
@@ -203,15 +191,21 @@ func postWithToken(url, token string, payload, v any) error {
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Authorization", "bearer "+token)
+	req.Header.Add("Accept", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&v)
+	if res.StatusCode == http.StatusUnauthorized {
+		return ErrUnauthorized
+	} else if res.StatusCode >= http.StatusBadRequest {
+		return fmt.Errorf("%w: %s", ErrUnexpectedStatusCode, res.Status)
+	}
+
+	err = json.NewDecoder(res.Body).Decode(resBody)
 	if err != nil {
 		return err
 	}

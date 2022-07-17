@@ -6,10 +6,40 @@ import (
 	"github.com/luisnquin/mcserver-cli/src/network"
 )
 
-const token string = "000000000000459362d3956f000177763d236c87295726b8db42ae4f3f9cd47a5ef27df2aab1faaadc7d2257c404"
+const token string = "000000000000459362d39c650001ca376637674d56f44595a40e0f984774278c28f4de004be7dda4d6ab1618e594"
 
-func TestPlayItSignIn(t *testing.T) {
+func TestRefreshSession(t *testing.T) {
+	res, err := network.RefreshSession(token)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	t.Log(res)
+}
+
+func TestPortLeases(t *testing.T) {
 	res, err := network.ListPortLeases(token)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	t.Log(res)
+}
+
+func TestPortMappings(t *testing.T) {
+	res, err := network.ListPortMappings(token)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	t.Log(res)
+}
+
+func TestGetTunnel(t *testing.T) {
+	res, err := network.GetTunnel(token)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
